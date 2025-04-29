@@ -1,24 +1,12 @@
 package user
 
-import (
-	"sync"
-)
-
-var UserMap = map[string]*User{
+var UserMap = map[string]*User{ //todo, replace with database
 	"marwan2000": {
 		Username:  "marwan2000",
 		Password:  "12345678",
 		Firstname: "Marwan",
 		Lastname:  "Abdalla",
 	},
-}
-
-var SessionMap sync.Map
-
-func GetUsernameFromSessionMapService(session string) (string, bool) {
-	usernameAny, ok := SessionMap.Load(session)
-	username, _ := usernameAny.(string) // ✅ type assertion
-	return username, ok
 }
 
 func GetUserByUsernameService(username string) (*User, bool) {

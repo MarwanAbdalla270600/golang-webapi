@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"carsharing/internal/auth"
 	"carsharing/internal/user"
 	"net/http"
 	"time"
@@ -16,7 +17,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		username, ok := user.GetUsernameFromSessionMapService(session)
+		username, ok := auth.GetUsernameFromSessionMapService(session)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid session"})
 			c.Abort()
@@ -32,7 +33,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if time.Now().After(userModel.SessionExpireDate) {
 			userModel.Session = ""
 			userModel.SessionExpireDate = time.Time{}
-			user.SessionMap.Delete(session)
+			auth.SessionMap.Delete(session)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "session expired"})
 			c.Abort()
 			return
@@ -40,6 +41,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// If everything OK -> Save user info in context for the next handlers
 		c.Set("user", userModel)
+		c.Set("session", session)
 		c.Next() // continue to the next handler
 	}
 }

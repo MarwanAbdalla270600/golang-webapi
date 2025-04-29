@@ -13,6 +13,7 @@ func initRoutes(router *gin.Engine) {
 	{
 		authRoutes.POST("/register", auth.RegisterHandler)
 		authRoutes.POST("/login", auth.LoginHandler)
+		authRoutes.POST("/logout", middleware.AuthMiddleware(), auth.LogoutHandler)
 	}
 	userRoutes := router.Group("/api/users")
 	{
