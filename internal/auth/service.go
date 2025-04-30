@@ -50,7 +50,7 @@ func LogoutService(sessionId string) bool {
 	return true
 }
 
-func RegisterService(user *userpkg.User) {
+func RegisterService(user *userpkg.User, handler *AuthHandler) {
 	userpkg.UserMap[user.Username] = user
-
+	userpkg.StoreUserInDatabase(handler.DB, user)
 }

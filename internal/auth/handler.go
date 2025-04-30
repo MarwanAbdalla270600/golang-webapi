@@ -2,12 +2,28 @@ package auth
 
 import (
 	"carsharing/internal/user"
+	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func LoginHandler(c *gin.Context) {
+type AuthHandler struct {
+	DB *sql.DB
+}
+
+func (h *AuthHandler) Register(c *gin.Context) {
+	var u user.User
+	if err := c.ShouldBindJSON(&u); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	RegisterService(&u, h) // or use h.DB if DB access is added
+	c.JSON(http.StatusOK, u)
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
 	var loginData user.UserLoginParser
 
 	if err := c.ShouldBindJSON(&loginData); err != nil {
@@ -20,31 +36,20 @@ func LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.SetCookie("session_id", token, int(user.SESSION_EXPIRE_TIME.Seconds()), "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
 
-func LogoutHandler(c *gin.Context) {
+func (h *AuthHandler) Logout(c *gin.Context) {
 	sessionVal, _ := c.Get("session")
 	session := sessionVal.(string)
 
-	success := LogoutService(session)
-	if !success {
+	if !LogoutService(session) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Something went wrong with logout"})
 		return
 	}
 
 	c.SetCookie("session_id", "", -1, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, gin.H{"message": "logged out"})
-}
-
-func RegisterHandler(c *gin.Context) {
-	var user user.User
-	err := c.ShouldBindJSON(&user)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	RegisterService(&user)
-	c.JSON(http.StatusOK, user)
 }

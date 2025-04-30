@@ -5,6 +5,7 @@ import "time"
 const SESSION_EXPIRE_TIME = 24 * time.Hour
 
 type User struct {
+	Id                int       `json:"id"`
 	Username          string    `json:"username"`
 	Password          string    `json:"-"`
 	Firstname         string    `json:"firstname"`
